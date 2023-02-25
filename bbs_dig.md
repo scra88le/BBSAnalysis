@@ -92,8 +92,8 @@ Rt.
 survey_clean <- survey[3:20,]
 years <- 10 # Simulate 10 years into the future
 N <- rep(0, years+1) 
-# Baseline the initial population
-N[1] <- 1 
+# Baseline the initial population given the population from 2022 = 6
+N[1] <- 6 
 
 # Make sequence pseudo random
 set.seed(42)
@@ -145,17 +145,56 @@ We can run the simulation function multiple times
 
 ``` r
 # specify the number of simulations and for how long
-sims=10; years=10
+sims=10000
+years=10
+initialCount = 6
 
 # make the randomizations repeatable
 set.seed(3)
 obs.R <- survey_clean$Rt
 
 outmat <- replicate(sims,   
-             expr=myForLoop(obs.R=obs.R, years=years, initial.N=1)
+             expr=myForLoop(obs.R=obs.R, years=years, initial.N=initialCount)
                     )
-# Visualise the output
-matplot(0:years, outmat, type="l", log="y")
 ```
 
-![](bbs_dig_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+Now let’s extract the last year of the simulations, and plot a
+distribution of the log of the growth rate.
+
+``` r
+N.2032 <- outmat[11,]
+summary(N.2032)
+```
+
+    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+    ##   0.0376   1.7041   3.6191   6.4451   7.6364 137.4634
+
+``` r
+hist(log10(N.2032))
+```
+
+![](bbs_dig_files/figure-gfm/unnamed-chunk-9-1.png)<!-- --> So what is
+the expected survival probability?
+
+``` r
+persisting <- as.numeric(N.2032 >=1)
+(p <- sum(persisting)/length(persisting))
+```
+
+    ## [1] 0.8719
+
+What is the uncertainty associated with this? We will find an intuitive
+Bayesian answer to the question: What is the probability that the
+Starling would become extinct in this region, due to these inherent
+processes?
+
+``` r
+base <- ggplot() + xlim(0, 1)
+
+base + 
+  geom_function(fun = dbeta, args = list(shape1 = 3, shape = 2)) + 
+  labs(y="Probability density of surviving",
+       x="Probability of surviving (p)")
+```
+
+![](bbs_dig_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
