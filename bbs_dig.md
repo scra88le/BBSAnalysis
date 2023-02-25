@@ -174,7 +174,7 @@ hist(log10(N.2032))
 ```
 
 ![](bbs_dig_files/figure-gfm/unnamed-chunk-9-1.png)<!-- --> So what is
-the expected survival probability?
+the expected survival probability??
 
 ``` r
 persisting <- as.numeric(N.2032 >=1)
